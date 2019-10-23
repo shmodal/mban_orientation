@@ -9,15 +9,17 @@ source("../2_data_science/code/clean_prices.R")
 # These parameters indicate the criteria we will use to filter the listings
 min_score <- 90
 min_reviews <- 5
-allowed_neighbourhoods <- c("Downtown","Back Bay","Chinatown")
+allowed_neighbourhoods <- c("Downtown","Back Bay","Chinatown","West End", "Beacon Hill", "Allston-Brighton")
 
 # These parameters describe the dates and length of stay for which we want to check availibility.
 nights <- 3
-args = commandArgs(trailingOnly=TRUE)
-dates = ymd(args[[1]])
-print(dates)
+#args = commandArgs(trailingOnly=TRUE)
+#dates = ymd(args[[1]])
+#print(dates)
 # If you want to run this script in RStudio, set the dates manually
-#dates <- ymd(c("2019-08-30","2019-09-27","2019-10-25", "2019-11-25"))
+dates <- ymd(c("2019-08-30","2019-09-27","2019-10-25", "2019-11-25"))
+
+dates <- ymd("2019-09-06")
 
 
 # These parameters the amenities that we will add as columns in our data
@@ -76,3 +78,60 @@ filtered_listings %>%
 	write_csv('filtered_listings.csv')
 
 print("Success!")
+
+
+
+
+accomodations <- read_csv('airbnb_solution.csv')
+results1 <-unique(accomodations$listing)
+
+new_data <- listings %>% filter(id %in% results1)
+
+
+
+library(ggmap)
+
+boston_coords <- c(left   = -71.1289, 
+                   bottom = 42.3201, 
+                   right  = -71.0189, 
+                   top    = 42.3701)
+
+basemap <- get_map(location = boston_coords,
+                   maptype = 'terrain')
+
+ggmap(basemap) + 
+  geom_point(aes(x = longitude, y = latitude), 
+             data = new_data, 
+             size = .5)
+
+
+
+
+
+accomodations2 <- read_csv('airbnb_solution2.csv')
+results2 <-unique(accomodations2$listing)
+
+new_data2 <- listings %>% filter(id %in% results2)
+
+
+
+library(ggmap)
+
+boston_coords <- c(left   = -71.1289, 
+                   bottom = 42.3201, 
+                   right  = -71.0189, 
+                   top    = 42.3701)
+
+basemap <- get_map(location = boston_coords,
+                   maptype = 'terrain')
+
+ggmap(basemap) + 
+  geom_point(aes(x = longitude, y = latitude), 
+             data = new_data,new_data2, 
+             size = .5)
+
+
+
+
+
+

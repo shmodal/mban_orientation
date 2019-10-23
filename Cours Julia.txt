@@ -1,0 +1,53 @@
+cours de julia
+
+
+using IJulia
+
+notebook()
+
+
+
+
+
+
+5==5.0   : true
+!false
+typeof(z)
+
+
+v=[1,2,4]
+
+v[[1,3]]
+
+w =[1.0,2.0,4.0]
+
+v.==w   array de bits
+v==w true
+
+w[2]=3 _> transformé en float
+
+
+v'*w
+
+v .+ 1    rajoute 1 à tous
+
+push!(s,2)
+
+V. ==1 : compare chaque valeur à 1
+
+
+s=v
+pop s  : modfie v
+
+
+
+
+v[    v.<=3       ]
+
+
+v[    .!   (v.<=3)
+
+
+
+
+h=copy(v)

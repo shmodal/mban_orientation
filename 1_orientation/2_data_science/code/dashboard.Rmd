@@ -44,14 +44,46 @@ listings <- clean_prices(listings)
 calendar <- clean_prices(calendar)
 ```
 
+
+  
+
+
+
+
 # A First Tab
 
 Column {data-width=650}
 -----------------------------------------------------------------------
 
-### A map! 
+### Map of best Airbnb places
 
 ```{r box_1}
+
+  listings_reduced <- listings %>% 
+  mutate(price_per= price/accommodates)%>%
+  filter(price_per <=33.33)  %>% 
+  
+  group_by(neighbourhood) %>%
+  
+  summarise(price_per = mean(price_per),mean_rating = mean(review_scores_rating,na.rm = TRUE)) %>%
+  
+  arrange(desc(mean_rating)) %>%
+   slice(c(1:10))
+
+areas <- listings_reduced$neighbourhood
+
+
+data2 <-listings %>%  
+  mutate(price_per= price/accommodates)%>%
+   filter(price_per <=33.33)  %>% 
+  filter(neighbourhood %in% areas)
+
+
+
+
+
+
+
 
 library(ggmap)
 
@@ -65,55 +97,134 @@ basemap <- get_map(location = boston_coords,
 
 ggmap(basemap) + 
 	geom_point(aes(x = longitude, y = latitude), 
-			   data = listings, 
+			   data = data2, 
 			   size = .5)
+
+
+
+
+
+
 ```
 
 Column {data-width=350}
 -----------------------------------------------------------------------
 
-### Box 2
+### Distribution of prices
 
-Frequently, visualization for decision-makers are most useful when accompanied by analysis, interpretation, and sometimes a recommendation by the analyst. Feel free to fill in your own commentary on your visualizations in this box or the one below. You can leave the `R` code chunk blank for your commentary box. 
+Low budget travellers do not need to fear for the quality of their accomodation : Boston has many areas with excellent ratings and low rents.
 
 ```{r box_2}
+list2 <-listings %>% 
+  mutate(price_per= price/accommodates)%>%
+  select(price_per) 
+  
+quantile(list2$price_per)
+
 
 ```
 
-### A different visualization! 
+As we can see, the lowest quantile fees correspond to less than 33.33 a night per person. Let's find out below in which areas they are found. 
+
+### Neighbourhoods
+
+These ten boroughs have the best quality/price ratio in Boston.
 
 ```{r box_3}
 # Put the code for a supporting visualization here. This visualization should add context and nuance, but expect the main visualization to convey the bulk of your message. 
 
 # This is not a good visualization -- always remember to include titles and legends. Make yours better! 
 
-neighbourhood_lookup <- listings %>% 
-	select(id, neighbourhood)
-
-calendar %>% 
-	left_join(neighbourhood_lookup, by = c('listing_id' = 'id')) %>% 
-	group_by(neighbourhood, date) %>% 
-	summarise(price = mean(price), n = n()) %>% 
-	filter(n > 100) %>%
-	ggplot() +
-	aes(x = date, y = price, color = neighbourhood) + 
-	geom_line() + 
-	guides(color = FALSE)
+  
+  listings %>% 
+  mutate(price_per= price/accommodates)%>%
+  filter(price_per <=33.33)  %>% 
+  
+  group_by(neighbourhood) %>%
+  
+  summarise(price_per = mean(price_per),mean_rating = mean(review_scores_rating,na.rm = TRUE)) %>%
+  
+  arrange(desc(mean_rating)) %>%
+   slice(c(1:10))
 ```
 
 
 # A Second Tab
-
 
 Column {data-width=650}
 -----------------------------------------------------------------------
 
 ### Box 1
 
-Your dashboard is allowed to have multiple tabs! Only use it if you need it. 
+As you can see in the visualization below, we explored the best neighbourhoods in which to stay
+if you would like to see the Boston Marathon. If you fancy a cheaper stay, Jamaica Plain is a lovely
+option, however, if you're a wealthy marathon aficionado, Downtown is the place to be!
+
+
+### Average April Prices by Neighbourhood and Date 
+
+```{r box_4}
+
+tiny_data <- listings %>%
+  select(id, property_type, neighbourhood)
+
+april_data <- calendar %>%
+  mutate(month = month(date, label = TRUE)) %>%
+  filter(month == 'Apr') %>%
+  left_join(tiny_data,
+            by = c('listing_id' = 'id'))
+
+april_data_sum <- april_data %>%
+  group_by(date, neighbourhood) %>%
+  summarise(avg_price = mean(price, na.rm = TRUE),
+            n = n()) %>%
+  filter(n >= 300, avg_price > 200)
+
+april_data_sum %>%
+  ggplot() +
+  aes(x = date,
+      y = avg_price,
+      color = neighbourhood) +
+  geom_line() +
+  labs(title = 'Avg Price Over Time') +
+  ylab('Avg Price') +
+  xlab('Date')
+```
+
+
 
 Column {data-width=350}
 -----------------------------------------------------------------------
 
 ### Box 2
+
+Here is a visualization for all you budget ice fishers out there looking to get in a chilly fishing 
+trip out on the Charles this December! This chart displays neighbourhood
+and property type combinations that are both plentiful and affordable!
+
+```{r box_5}
+dec_data <- calendar %>%
+  mutate(month = month(date, label = TRUE)) %>%
+  filter(month == 'Dec') %>%
+  left_join(tiny_data,
+            by = c('listing_id' = 'id'))
+
+dec_data_sum <- dec_data %>%
+  group_by(neighbourhood, property_type) %>%
+  summarise(avg_price = mean(price, na.rm = TRUE),
+            n = n()) %>%
+  filter(n >= 200, avg_price < 100)
+
+dec_data_sum %>%
+  ggplot() +
+  aes(x = neighbourhood,
+      y = property_type,
+      size = avg_price) +
+  coord_flip() +
+  geom_point() +
+  labs(title = 'Best listing Types and Areas for Budget Ice Fishing') +
+  ylab('Neighbourhood') +
+  xlab('Property Type')
+
+```
 
